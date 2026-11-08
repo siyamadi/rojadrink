@@ -25,3 +25,14 @@ Tidak perlu login di dalam aplikasi dan tidak membutuhkan Supabase.
 ## Catatan
 - Aplikasi dapat dibuka langsung sebagai file lokal. Google Fonts hanya digunakan untuk tampilan; bila tidak ada internet, aplikasi tetap dapat digunakan dengan font pengganti.
 - Jika GitHub Pages digunakan, semua file harus diunggah, bukan hanya `index.html`.
+
+## HPP dan target harga jual
+Pada formulir Tambah/Edit Menu tersedia perhitungan HPP per porsi. Isi biaya bahan baku, kemasan, dan biaya lain. Atur target margin laba serta biaya platform online sesuai potongan aktual marketplace/layanan pesan antar.
+
+Rumus yang digunakan:
+- HPP = biaya bahan baku + kemasan + biaya lain per porsi.
+- Target jual offline = HPP / (1 - target margin).
+- Target jual online = target jual offline / (1 - biaya platform online).
+- Harga target dibulatkan ke atas ke kelipatan Rp500.
+
+Harga jual yang sudah ada tetap disimpan sebagai harga jual saat ini; target offline dan online ditampilkan terpisah pada detail menu. Data HPP ikut tersimpan otomatis dan tercakup dalam backup JSON. Saat impor Excel, kolom opsional: `hppBahan`, `kemasan`, `biayaLain`, `marginTarget`, `biayaOnline`.

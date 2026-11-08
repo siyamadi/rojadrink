@@ -36,3 +36,14 @@ body{background:var(--cream);color:var(--ink)}
 .toast{background:#741329}
 .card-image-placeholder{color:#a71932;background:linear-gradient(135deg,#fff0cf,#f3d6bd)}
 .detail-image,.image-preview{background:#fff0cf}
+/* HPP and target selling price */
+.hpp-panel,.hpp-editor{margin:22px 0;padding:20px;border:1px solid rgba(164,35,28,.2);border-radius:16px;background:rgba(255,245,225,.72)}
+.hpp-panel .eyebrow,.hpp-editor h3{color:#9f211b}
+.hpp-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.hpp-metrics>div{padding:14px;border-radius:12px;background:#fffdf8;border:1px solid rgba(120,50,20,.12);min-width:0}
+.hpp-metrics small,.hpp-preview span{display:block;color:#735d4b;font-size:.8rem}
+.hpp-metrics b{display:block;margin-top:6px;color:#9f211b;font-size:1.12rem;overflow-wrap:anywhere}
+.hpp-editor h3{margin:0 0 6px}.hpp-editor .form-grid{margin-top:14px}
+.hpp-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;padding:14px;background:#fffdf8;border-radius:12px}
+.hpp-preview b{display:block;color:#9f211b;font-size:1rem;margin-top:4px}
+@media(max-width:600px){.hpp-metrics,.hpp-preview{grid-template-columns:1fr}.hpp-metrics>div{padding:11px}}
