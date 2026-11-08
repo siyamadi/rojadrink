@@ -72,8 +72,8 @@ function normalize(item){return {brand:String(item.brand||'Brand lainnya'),kateg
 function num(v){const n=Number(String(v??0).replace(/[^0-9.-]/g,''));return Number.isFinite(n)?Math.max(0,n):0}
 function pricing(m){const hpp=num(m.hppBahan)+num(m.kemasan)+num(m.biayaLain),margin=Math.min(90,num(m.marginTarget))/100,fee=Math.min(80,num(m.biayaOnline))/100;const offline=margin>=1?0:hpp/(1-margin);const online=fee>=1?0:offline/(1-fee);const round=x=>Math.ceil(x/500)*500;return {hpp,offline:round(offline),online:round(online),margin,fee};}
 function persist(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(menuList));scheduleFolderSave();return true}
- catch(err){showToast('Penyimpanan browser penuh atau diblokir. Pilih folder penyimpanan atau ekspor backup.');return false}
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(menuList));scheduleFolderSave();setStorageStatus('Tersimpan otomatis di browser');return true}
+ catch(err){console.error('localStorage gagal:',err);setStorageStatus('Penyimpanan browser gagal — ekspor backup');return false}
 }
 function openFolderDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(FOLDER_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(FOLDER_STORE))req.result.createObjectStore(FOLDER_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function storeFolderHandle(handle){const db=await openFolderDB();return new Promise((resolve,reject)=>{const tx=db.transaction(FOLDER_STORE,'readwrite');tx.objectStore(FOLDER_STORE).put(handle,FOLDER_HANDLE_KEY);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
@@ -96,7 +96,26 @@ function closeModals(){$('detailModal').classList.add('hidden');$('formModal').c
 function openDetail(index){if(!menuList[index])return;activeIndex=index;const m=menuList[index];const p=pricing(m);$('detailHpp').textContent=rupiah(p.hpp);$('detailOffline').textContent=rupiah(p.offline);$('detailOnline').textContent=rupiah(p.online);$('detailHppNote').textContent=`Biaya bahan ${rupiah(m.hppBahan)} + kemasan ${rupiah(m.kemasan)} + biaya lain ${rupiah(m.biayaLain)}. Margin target ${m.marginTarget}% dan biaya platform ${m.biayaOnline}%. Harga dibulatkan ke atas per Rp500.`;$('detailImage').src=m.gambar||'';$('detailImage').classList.toggle('hidden',!m.gambar);$('detailBrand').textContent=m.brand;$('detailTitle').textContent=m.nama;$('detailCategory').textContent=m.kategori;$('detailPrice').textContent=rupiah(m.harga);$('detailDesc').textContent=m.deskripsi||'Belum ada deskripsi.';$('detailIngredients').textContent=m.bahan.split(/;|\n/).map(x=>x.trim()).filter(Boolean).map(x=>'• '+x).join('\n')||'Belum diisi.';$('detailSteps').textContent=m.cara.trim()||'Belum diisi.';openModal('detailModal')}
 function openForm(index=null){editingIndex=index;const editing=index!==null;const m=editing?menuList[index]:{brand:menuList[0]?.brand||'Kopi Tuku',nama:'',kategori:'',harga:'',deskripsi:'',bahan:'',cara:'',gambar:'',hppBahan:0,kemasan:0,biayaLain:0,marginTarget:35,biayaOnline:20};draftImage=m.gambar||'';renderFilters();$('formTitle').textContent=editing?'Edit menu':'Tambah menu baru';$('formBrand').value=m.brand;$('formNama').value=m.nama;$('formKategori').value=m.kategori;$('formHarga').value=m.harga;$('formDesc').value=m.deskripsi;$('formBahan').value=m.bahan;$('formCara').value=m.cara;$('formHppBahan').value=m.hppBahan||0;$('formKemasan').value=m.kemasan||0;$('formBiayaLain').value=m.biayaLain||0;$('formMargin').value=m.marginTarget??35;$('formFeeOnline').value=m.biayaOnline??20;updateHppPreview();updateImagePreview();$('formImage').value='';openModal('formModal')}
 $('formBrand').addEventListener('change',e=>{if(e.target.value==='__new'){const name=prompt('Masukkan nama brand baru:');if(name&&name.trim()){const option=document.createElement('option');option.value=name.trim();option.textContent=name.trim();e.target.insertBefore(option,e.target.querySelector('option[value="__new"]'));e.target.value=name.trim()}else e.target.value=menuList[0]?.brand||''}});
-$('menuForm').addEventListener('submit',e=>{e.preventDefault();const item=normalize({brand:$('formBrand').value,nama:$('formNama').value.trim(),kategori:$('formKategori').value.trim(),harga:$('formHarga').value,deskripsi:$('formDesc').value.trim(),bahan:$('formBahan').value.trim(),cara:$('formCara').value.trim(),gambar:draftImage,hppBahan:$('formHppBahan').value,kemasan:$('formKemasan').value,biayaLain:$('formBiayaLain').value,marginTarget:$('formMargin').value,biayaOnline:$('formFeeOnline').value});if(!item.nama||!item.kategori){showToast('Nama menu dan kategori wajib diisi.');return}const wasEditing=editingIndex!==null;if(wasEditing)menuList[editingIndex]=item;else menuList.unshift(item);persist();selectedBrand='All';$('searchInput').value='';closeModals();renderAll();showToast(wasEditing?'Perubahan menu berhasil disimpan.':'Menu berhasil ditambahkan.')});
+$('menuForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ try{
+  const nama=$('formNama').value.trim();
+  const kategori=$('formKategori').value.trim();
+  const harga=$('formHarga').value;
+  const brand=$('formBrand').value;
+  if(!nama){showToast('Nama menu wajib diisi.');$('formNama').focus();return}
+  if(!kategori){showToast('Kategori wajib diisi.');$('formKategori').focus();return}
+  if(harga===''||!Number.isFinite(Number(harga))||Number(harga)<0){showToast('Isi harga jual dengan angka 0 atau lebih.');$('formHarga').focus();return}
+  if(!brand||brand==='__new'){showToast('Pilih atau buat brand terlebih dahulu.');$('formBrand').focus();return}
+  const item=normalize({brand,nama,kategori,harga,deskripsi:$('formDesc').value.trim(),bahan:$('formBahan').value.trim(),cara:$('formCara').value.trim(),gambar:draftImage,hppBahan:$('formHppBahan').value,kemasan:$('formKemasan').value,biayaLain:$('formBiayaLain').value,marginTarget:$('formMargin').value,biayaOnline:$('formFeeOnline').value});
+  const wasEditing=editingIndex!==null;
+  if(wasEditing){if(!menuList[editingIndex])throw Error('Menu yang diedit tidak ditemukan.');menuList[editingIndex]=item}else menuList.unshift(item);
+  renderAll();
+  const saved=persist();
+  selectedBrand='All';$('searchInput').value='';renderAll();closeModals();
+  showToast(saved?(wasEditing?'Perubahan menu berhasil disimpan.':'Menu berhasil ditambahkan.'):'Menu tampil sementara, tetapi penyimpanan browser gagal. Ekspor backup atau aktifkan folder simpan.');
+ }catch(err){console.error('Gagal menyimpan menu:',err);showToast('Gagal menyimpan menu: '+(err.message||'periksa data lalu coba lagi.'));}
+});
 $('deleteBtn').addEventListener('click',()=>{if(activeIndex===null||!confirm(`Hapus menu "${menuList[activeIndex]?.nama}"?`))return;menuList.splice(activeIndex,1);persist();closeModals();renderAll();showToast('Menu berhasil dihapus.')});
 $('editBtn').addEventListener('click',()=>{const index=activeIndex;closeModals();openForm(index)});
 $('addBtn').addEventListener('click',()=>openForm());$('folderBtn').addEventListener('click',chooseDataFolder);$('searchInput').addEventListener('input',renderCards);$('resetFilter').addEventListener('click',()=>{$('searchInput').value='';selectedBrand='All';renderAll()});
