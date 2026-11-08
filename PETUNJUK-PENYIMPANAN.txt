@@ -1,15 +1,20 @@
-PENYIMPANAN LANGSUNG KE FOLDER KOMPUTER
+ROJA DRINK - AUTOSAVE LANGSUNG KE FOLDER KOMPUTER
 
-1. Ekstrak folder ROJA DRINK ke komputer.
-2. Buka index.html menggunakan Google Chrome atau Microsoft Edge versi terbaru.
-3. Klik tombol "Pilih folder simpan".
-4. Pilih folder khusus di komputer, lalu klik "Izinkan" jika diminta.
-5. Aplikasi akan membuat/memperbarui file nasimie-roja-data.json di folder pilihan.
-6. Setelah tambah/edit/hapus menu, tunggu sampai status menampilkan "TERSIMPAN DI KOMPUTER".
+CARA MENJALANKAN:
+1. Ekstrak folder ROJA_DRINK ke lokasi tetap, misalnya D:\ROJA_DRINK.
+2. Pastikan Python 3 terpasang di Windows. Saat instalasi, centang "Add Python to PATH".
+3. Klik dua kali MULAI-ROJA-DRINK.bat.
+4. Browser akan membuka http://127.0.0.1:8765.
+5. Tambah/edit/hapus menu seperti biasa. Tidak perlu memilih folder dari browser.
+
+PENYIMPANAN:
+Semua perubahan langsung ditulis oleh program lokal ke file:
+ROJA_DRINK\nasimie-roja-data.json
+File tersebut berada di folder aplikasi yang diekstrak. Ukuran file akan berubah saat data menu bertambah.
 
 PENTING:
-- File nasimie-roja-data.json adalah satu file katalog yang terus DIPERBARUI/DITIMPA, bukan membuat file baru untuk setiap menu.
-- Ukuran file JSON akan berubah sesuai banyaknya isi data. Folder tidak menambah jumlah file setiap kali menu ditambah.
-- Jika status meminta izin lagi, klik "Pilih folder simpan" dan pilih folder yang sama.
-- Jangan gunakan mode Incognito. Jangan hapus data situs/browser jika ingin mempertahankan izin akses folder.
-- Fitur akses folder langsung didukung Chrome/Edge modern. Browser lain mungkin tidak mendukungnya.
+- Jendela hitam server harus tetap terbuka saat aplikasi digunakan.
+- Untuk berhenti, tutup jendela hitam tersebut.
+- Jangan membuka index.html langsung dengan double-click; selalu jalankan MULAI-ROJA-DRINK.bat.
+- Buat salinan folder ROJA_DRINK secara berkala sebagai backup.
+- Penyimpanan ini lokal di komputer tersebut, bukan sinkronisasi antarperangkat.
