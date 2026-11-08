@@ -36,3 +36,15 @@ Rumus yang digunakan:
 - Harga target dibulatkan ke atas ke kelipatan Rp500.
 
 Harga jual yang sudah ada tetap disimpan sebagai harga jual saat ini; target offline dan online ditampilkan terpisah pada detail menu. Data HPP ikut tersimpan otomatis dan tercakup dalam backup JSON. Saat impor Excel, kolom opsional: `hppBahan`, `kemasan`, `biayaLain`, `marginTarget`, `biayaOnline`.
+
+## Simpan otomatis ke folder komputer
+Aplikasi statis tidak dapat mengubah ukuran atau isi `index.html` ketika menu ditambah. Data katalog disimpan di penyimpanan browser (`localStorage`), bukan ditulis ke folder proyek, karena browser membatasi akses tulis ke folder komputer.
+
+Untuk membuat salinan data otomatis di folder komputer:
+1. Buka website menggunakan Chrome atau Edge terbaru.
+2. Klik **Pilih folder simpan** dan pilih folder khusus, misalnya `Dokumen/Nasimie Roja`.
+3. Izinkan akses baca/tulis saat browser memintanya.
+4. Setiap tambah/edit/hapus menu atau perubahan identitas akan memperbarui file `nasimie-roja-data.json` di folder tersebut.
+5. Jika setelah membuka ulang website status meminta izin lagi, klik **Pilih folder simpan** dan pilih folder yang sama.
+
+Catatan: fitur folder otomatis memerlukan browser yang mendukung File System Access API (Chrome/Edge desktop) dan izin folder. Pada browser lain atau perangkat mobile, gunakan **Ekspor data** untuk mengunduh backup JSON. Data browser dan file JSON folder adalah dua salinan terpisah; file JSON dapat diimpor kembali melalui menu Impor Excel / JSON.
