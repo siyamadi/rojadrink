@@ -71,17 +71,49 @@ const rupiah=value=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'ID
 function normalize(item){return {brand:String(item.brand||'Brand lainnya'),kategori:String(item.kategori||'Tanpa kategori'),nama:String(item.nama||'Menu tanpa nama'),harga:String(item.harga??'0').replace(/[^\d]/g,''),deskripsi:String(item.deskripsi||''),bahan:String(item.bahan||''),cara:String(item.cara||''),gambar:String(item.gambar||item.image||''),hppBahan:num(item.hppBahan),kemasan:num(item.kemasan),biayaLain:num(item.biayaLain),marginTarget:item.marginTarget===''||item.marginTarget==null?35:num(item.marginTarget),biayaOnline:item.biayaOnline===''||item.biayaOnline==null?20:num(item.biayaOnline)};}
 function num(v){const n=Number(String(v??0).replace(/[^0-9.-]/g,''));return Number.isFinite(n)?Math.max(0,n):0}
 function pricing(m){const hpp=num(m.hppBahan)+num(m.kemasan)+num(m.biayaLain),margin=Math.min(90,num(m.marginTarget))/100,fee=Math.min(80,num(m.biayaOnline))/100;const offline=margin>=1?0:hpp/(1-margin);const online=fee>=1?0:offline/(1-fee);const round=x=>Math.ceil(x/500)*500;return {hpp,offline:round(offline),online:round(online),margin,fee};}
-function persist(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(menuList));scheduleFolderSave();setStorageStatus('Tersimpan otomatis di browser');return true}
- catch(err){console.error('localStorage gagal:',err);setStorageStatus('Penyimpanan browser gagal — ekspor backup');return false}
+async function persist(){
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(menuList));
+  if(!dataFolderHandle){setStorageStatus('Belum tersambung ke folder komputer — klik Pilih folder simpan');return false;}
+  const written=await scheduleFolderSave();
+  return written===true;
+ }catch(err){console.error('Gagal menyimpan:',err);setStorageStatus('Gagal menyimpan: '+(err.message||'periksa izin folder'));return false}
 }
 function openFolderDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(FOLDER_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(FOLDER_STORE))req.result.createObjectStore(FOLDER_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function storeFolderHandle(handle){const db=await openFolderDB();return new Promise((resolve,reject)=>{const tx=db.transaction(FOLDER_STORE,'readwrite');tx.objectStore(FOLDER_STORE).put(handle,FOLDER_HANDLE_KEY);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
 async function getFolderHandle(){const db=await openFolderDB();return new Promise((resolve,reject)=>{const tx=db.transaction(FOLDER_STORE,'readonly');const req=tx.objectStore(FOLDER_STORE).get(FOLDER_HANDLE_KEY);req.onsuccess=()=>{db.close();resolve(req.result||null)};req.onerror=()=>{db.close();reject(req.error)}})}
 function snapshotData(){return JSON.stringify({app:'Nasimie Roja',version:4,savedAt:new Date().toISOString(),settings:restaurantSettings,menus:menuList},null,2)}
-function scheduleFolderSave(){if(!dataFolderHandle)return;folderSaveQueue=folderSaveQueue.then(async()=>{const permission=await dataFolderHandle.queryPermission({mode:'readwrite'});if(permission!=='granted'){setStorageStatus('Izin folder perlu diberikan ulang');return}const file=await dataFolderHandle.getFileHandle('nasimie-roja-data.json',{create:true});const writable=await file.createWritable();await writable.write(snapshotData());await writable.close();setStorageStatus('Tersimpan di folder + browser')}).catch(err=>{console.error(err);setStorageStatus('Gagal menulis folder — periksa izin/ruang disk')})}
+function scheduleFolderSave(){
+ if(!dataFolderHandle)return Promise.resolve(false);
+ const handle=dataFolderHandle;
+ folderSaveQueue=folderSaveQueue.then(async()=>{
+  let permission=await handle.queryPermission({mode:'readwrite'});
+  if(permission!=='granted')permission=await handle.requestPermission({mode:'readwrite'});
+  if(permission!=='granted'){setStorageStatus('Izin folder ditolak. Klik Pilih folder simpan dan izinkan akses.');return false;}
+  const file=await handle.getFileHandle('nasimie-roja-data.json',{create:true});
+  const writable=await file.createWritable();
+  await writable.write(snapshotData());
+  await writable.close();
+  const savedFile=await file.getFile();
+  setStorageStatus('TERSIMPAN DI KOMPUTER: nasimie-roja-data.json ('+savedFile.size.toLocaleString('id-ID')+' byte)');
+  return true;
+ }).catch(err=>{console.error('Folder autosave gagal:',err);setStorageStatus('GAGAL MENULIS FOLDER: '+(err.message||'periksa izin/ruang disk'));return false});
+ return folderSaveQueue;
+}
 function setStorageStatus(message){const el=$('storageStatus');if(el)el.textContent=message}
-async function chooseDataFolder(){if(!('showDirectoryPicker' in window)){showToast('Fitur simpan folder otomatis memerlukan Chrome atau Edge versi terbaru. Gunakan Ekspor Data sebagai alternatif.');return}try{const handle=await window.showDirectoryPicker({id:'nasimie-roja-data',mode:'readwrite'});const permission=await handle.requestPermission({mode:'readwrite'});if(permission!=='granted'){showToast('Izin folder tidak diberikan.');return}dataFolderHandle=handle;await storeFolderHandle(handle);const file=await dataFolderHandle.getFileHandle('nasimie-roja-data.json',{create:true});const writable=await file.createWritable();await writable.write(snapshotData());await writable.close();setStorageStatus('Tersimpan di folder + browser');showToast('Folder penyimpanan terhubung. Setiap perubahan akan dibuatkan salinan otomatis di folder ini.')}catch(err){if(err.name!=='AbortError'){console.error(err);showToast('Folder tidak dapat dihubungkan. Periksa izin browser.')}}}
+async function chooseDataFolder(){
+ if(!('showDirectoryPicker' in window)){showToast('Simpan langsung ke folder memerlukan Chrome/Edge terbaru.');setStorageStatus('Browser ini tidak mendukung akses folder langsung.');return;}
+ try{
+  const handle=await window.showDirectoryPicker({id:'nasimie-roja-data',mode:'readwrite'});
+  const permission=await handle.requestPermission({mode:'readwrite'});
+  if(permission!=='granted'){showToast('Izin folder tidak diberikan.');return;}
+  dataFolderHandle=handle;
+  await storeFolderHandle(handle);
+  const saved=await scheduleFolderSave();
+  if(saved){showToast('Folder komputer berhasil dihubungkan. Setiap tambah/edit/hapus menu akan memperbarui file JSON di folder ini.');}
+  else showToast('Folder dipilih, tetapi file gagal ditulis. Periksa izin folder.');
+ }catch(err){if(err.name!=='AbortError'){console.error(err);setStorageStatus('Folder gagal dihubungkan: '+(err.message||'kesalahan browser'));showToast('Folder tidak dapat dihubungkan. Coba Chrome atau Edge.');}}
+}
 async function restoreDataFolder(){try{dataFolderHandle=await getFolderHandle();if(!dataFolderHandle)return;const permission=await dataFolderHandle.queryPermission({mode:'readwrite'});if(permission==='granted'){setStorageStatus('Folder tersambung — autosave aktif');scheduleFolderSave()}else setStorageStatus('Klik Pilih folder simpan untuk mengaktifkan izin lagi')}catch(e){console.warn('Folder handle belum tersedia',e)}}
 function loadSettings(){try{const saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');restaurantSettings={name:String(saved.name||'KOPI ATELIER'),subtitle:String(saved.subtitle||'MENU & RECIPE LIBRARY')};}catch(e){}applySettings()}
 function applySettings(){document.title=restaurantSettings.name+' — Katalog Menu & Resep';$('restaurantName').textContent=restaurantSettings.name;$('restaurantSubtitle').textContent=restaurantSettings.subtitle;$('restaurantNameInput').value=restaurantSettings.name;$('restaurantSubtitleInput').value=restaurantSettings.subtitle;document.querySelector('footer span').textContent='☕ '+restaurantSettings.name}
@@ -96,7 +128,7 @@ function closeModals(){$('detailModal').classList.add('hidden');$('formModal').c
 function openDetail(index){if(!menuList[index])return;activeIndex=index;const m=menuList[index];const p=pricing(m);$('detailHpp').textContent=rupiah(p.hpp);$('detailOffline').textContent=rupiah(p.offline);$('detailOnline').textContent=rupiah(p.online);$('detailHppNote').textContent=`Biaya bahan ${rupiah(m.hppBahan)} + kemasan ${rupiah(m.kemasan)} + biaya lain ${rupiah(m.biayaLain)}. Margin target ${m.marginTarget}% dan biaya platform ${m.biayaOnline}%. Harga dibulatkan ke atas per Rp500.`;$('detailImage').src=m.gambar||'';$('detailImage').classList.toggle('hidden',!m.gambar);$('detailBrand').textContent=m.brand;$('detailTitle').textContent=m.nama;$('detailCategory').textContent=m.kategori;$('detailPrice').textContent=rupiah(m.harga);$('detailDesc').textContent=m.deskripsi||'Belum ada deskripsi.';$('detailIngredients').textContent=m.bahan.split(/;|\n/).map(x=>x.trim()).filter(Boolean).map(x=>'• '+x).join('\n')||'Belum diisi.';$('detailSteps').textContent=m.cara.trim()||'Belum diisi.';openModal('detailModal')}
 function openForm(index=null){editingIndex=index;const editing=index!==null;const m=editing?menuList[index]:{brand:menuList[0]?.brand||'Kopi Tuku',nama:'',kategori:'',harga:'',deskripsi:'',bahan:'',cara:'',gambar:'',hppBahan:0,kemasan:0,biayaLain:0,marginTarget:35,biayaOnline:20};draftImage=m.gambar||'';renderFilters();$('formTitle').textContent=editing?'Edit menu':'Tambah menu baru';$('formBrand').value=m.brand;$('formNama').value=m.nama;$('formKategori').value=m.kategori;$('formHarga').value=m.harga;$('formDesc').value=m.deskripsi;$('formBahan').value=m.bahan;$('formCara').value=m.cara;$('formHppBahan').value=m.hppBahan||0;$('formKemasan').value=m.kemasan||0;$('formBiayaLain').value=m.biayaLain||0;$('formMargin').value=m.marginTarget??35;$('formFeeOnline').value=m.biayaOnline??20;updateHppPreview();updateImagePreview();$('formImage').value='';openModal('formModal')}
 $('formBrand').addEventListener('change',e=>{if(e.target.value==='__new'){const name=prompt('Masukkan nama brand baru:');if(name&&name.trim()){const option=document.createElement('option');option.value=name.trim();option.textContent=name.trim();e.target.insertBefore(option,e.target.querySelector('option[value="__new"]'));e.target.value=name.trim()}else e.target.value=menuList[0]?.brand||''}});
-$('menuForm').addEventListener('submit',e=>{
+$('menuForm').addEventListener('submit',async e=>{
  e.preventDefault();
  try{
   const nama=$('formNama').value.trim();
@@ -111,12 +143,12 @@ $('menuForm').addEventListener('submit',e=>{
   const wasEditing=editingIndex!==null;
   if(wasEditing){if(!menuList[editingIndex])throw Error('Menu yang diedit tidak ditemukan.');menuList[editingIndex]=item}else menuList.unshift(item);
   renderAll();
-  const saved=persist();
+  const saved=await persist();
   selectedBrand='All';$('searchInput').value='';renderAll();closeModals();
-  showToast(saved?(wasEditing?'Perubahan menu berhasil disimpan.':'Menu berhasil ditambahkan.'):'Menu tampil sementara, tetapi penyimpanan browser gagal. Ekspor backup atau aktifkan folder simpan.');
+  showToast(saved?(wasEditing?'Perubahan menu berhasil disimpan.':'Menu berhasil ditambahkan.'):'Menu tampil, tetapi belum tersimpan ke folder komputer. Klik Pilih folder simpan lalu pilih folder.');
  }catch(err){console.error('Gagal menyimpan menu:',err);showToast('Gagal menyimpan menu: '+(err.message||'periksa data lalu coba lagi.'));}
 });
-$('deleteBtn').addEventListener('click',()=>{if(activeIndex===null||!confirm(`Hapus menu "${menuList[activeIndex]?.nama}"?`))return;menuList.splice(activeIndex,1);persist();closeModals();renderAll();showToast('Menu berhasil dihapus.')});
+$('deleteBtn').addEventListener('click',async()=>{if(activeIndex===null||!confirm(`Hapus menu "${menuList[activeIndex]?.nama}"?`))return;menuList.splice(activeIndex,1);const saved=await persist();closeModals();renderAll();showToast(saved?'Menu berhasil dihapus dan disimpan.':'Menu dihapus dari tampilan, tetapi folder komputer belum berhasil diperbarui.');});
 $('editBtn').addEventListener('click',()=>{const index=activeIndex;closeModals();openForm(index)});
 $('addBtn').addEventListener('click',()=>openForm());$('folderBtn').addEventListener('click',chooseDataFolder);$('searchInput').addEventListener('input',renderCards);$('resetFilter').addEventListener('click',()=>{$('searchInput').value='';selectedBrand='All';renderAll()});
 document.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',closeModals));document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModals()});
@@ -140,7 +172,7 @@ $('importInput').addEventListener('change',async e=>{
   if(!Array.isArray(rows)||!rows.length)throw Error('Tidak ada data menu. Pastikan baris pertama berisi judul kolom.');
   const cleaned=rows.map(normalize);
   if(!confirm(`Ditemukan ${cleaned.length} menu dari file "${file.name}". Impor akan MENGGANTI seluruh data katalog saat ini. Lanjutkan?`))return;
-  menuList=cleaned;if(importedSettings){restaurantSettings={name:String(importedSettings.name||'KOPI ATELIER'),subtitle:String(importedSettings.subtitle||'MENU & RECIPE LIBRARY')};localStorage.setItem(SETTINGS_KEY,JSON.stringify(restaurantSettings));applySettings()}selectedBrand='All';$('searchInput').value='';persist();renderAll();showToast(`${menuList.length} menu berhasil diimpor.`);
+  menuList=cleaned;if(importedSettings){restaurantSettings={name:String(importedSettings.name||'KOPI ATELIER'),subtitle:String(importedSettings.subtitle||'MENU & RECIPE LIBRARY')};localStorage.setItem(SETTINGS_KEY,JSON.stringify(restaurantSettings));applySettings()}selectedBrand='All';$('searchInput').value='';const saved=await persist();renderAll();showToast(saved?`${menuList.length} menu berhasil diimpor dan disimpan ke folder komputer.`:`${menuList.length} menu dimuat, tetapi belum tersimpan ke folder komputer. Klik Pilih folder simpan.`);
  }catch(err){console.error(err);showToast(err.message||'File tidak valid. Periksa format Excel/JSON.');}
  finally{e.target.value=''}
 });

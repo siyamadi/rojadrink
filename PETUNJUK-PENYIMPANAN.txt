@@ -1,0 +1,15 @@
+PENYIMPANAN LANGSUNG KE FOLDER KOMPUTER
+
+1. Ekstrak folder ROJA DRINK ke komputer.
+2. Buka index.html menggunakan Google Chrome atau Microsoft Edge versi terbaru.
+3. Klik tombol "Pilih folder simpan".
+4. Pilih folder khusus di komputer, lalu klik "Izinkan" jika diminta.
+5. Aplikasi akan membuat/memperbarui file nasimie-roja-data.json di folder pilihan.
+6. Setelah tambah/edit/hapus menu, tunggu sampai status menampilkan "TERSIMPAN DI KOMPUTER".
+
+PENTING:
+- File nasimie-roja-data.json adalah satu file katalog yang terus DIPERBARUI/DITIMPA, bukan membuat file baru untuk setiap menu.
+- Ukuran file JSON akan berubah sesuai banyaknya isi data. Folder tidak menambah jumlah file setiap kali menu ditambah.
+- Jika status meminta izin lagi, klik "Pilih folder simpan" dan pilih folder yang sama.
+- Jangan gunakan mode Incognito. Jangan hapus data situs/browser jika ingin mempertahankan izin akses folder.
+- Fitur akses folder langsung didukung Chrome/Edge modern. Browser lain mungkin tidak mendukungnya.
