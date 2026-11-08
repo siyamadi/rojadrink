@@ -47,3 +47,14 @@ body{background:var(--cream);color:var(--ink)}
 .hpp-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;padding:14px;background:#fffdf8;border-radius:12px}
 .hpp-preview b{display:block;color:#9f211b;font-size:1rem;margin-top:4px}
 @media(max-width:600px){.hpp-metrics,.hpp-preview{grid-template-columns:1fr}.hpp-metrics>div{padding:11px}}
+
+/* Harga jual dan HPP ditampilkan berdampingan pada kartu menu */
+.card-bottom{gap:12px;align-items:flex-end}
+.card-prices{display:flex;align-items:flex-end;gap:18px;min-width:0;flex-wrap:wrap}
+.card-price-item{display:flex;flex-direction:column;gap:5px;min-width:0}
+.card-price-item small{font-size:9px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.card-price-item b{font-size:14px;overflow-wrap:anywhere}
+.card-price-item .price{color:#a71932}
+.hpp-card-price b{color:#67564d}
+.view-recipe{white-space:nowrap}
+@media(max-width:420px){.card-prices{gap:12px}.card-price-item b{font-size:12px}.card-price-item small{font-size:8px}.card-bottom{align-items:flex-end}}
