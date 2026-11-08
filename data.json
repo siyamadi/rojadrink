@@ -1,0 +1,56 @@
+[
+  {
+    "brand": "Kopi Tuku",
+    "kategori": "Kopi Susu (Signature)",
+    "nama": "Es Kopi Susu Tetangga",
+    "harga": "22.000",
+    "deskripsi": "Menu legendaris pelopor es kopi susu gula aren. Perpaduan espresso blend, susu segar, krimer, dan sirup gula aren khas Tuku yang gurih dan creamy.",
+    "bahan": "1 shot espresso (30ml) / 1.5 sdt kopi instan pekat tanpa ampas diseduh air panas; 120ml susu cair UHT Full Cream; 20ml krimer cair / 1 sdm krimer bubuk dilarutkan; 25ml sirup gula aren kental asli; Es batu secukupnya.",
+    "cara": "1. Larutkan sirup gula aren di dasar gelas. 2. Masukkan es batu hingga penuh. 3. Tuang susu segar cair dan krimer secara perlahan agar menyatu. 4. Tuangkan espresso hangat di lapisan paling atas. Aduk rata sebelum dinikmati."
+  },
+  {
+    "brand": "Kopi Tuku",
+    "kategori": "Kopi Klasik",
+    "nama": "Es Kopi Hitam",
+    "harga": "20.000",
+    "deskripsi": "Kopi hitam dingin klasik (Americano/Long Black) menggunakan biji kopi house blend Tuku.",
+    "bahan": "2 shot espresso (60ml) atau 2 sdt kopi bubuk instan berkualitas; 150ml air mineral dingin; es batu secukupnya.",
+    "cara": "1. Siapkan es batu di dalam gelas. 2. Tuangkan air mineral dingin. 3. Masukkan espresso ke dalam gelas secara perlahan."
+  },
+  {
+    "brand": "Tomoro Coffee",
+    "kategori": "Tomoro Signature",
+    "nama": "Tomoro Aren Latte",
+    "harga": "22.000",
+    "deskripsi": "Espresso, Susu Cair (UHT), Sirup Gula Aren Premium, Es Batu dengan takaran pas.",
+    "bahan": "1 shot Espresso (30ml); 120ml Susu UHT Full Cream; 20-25ml Sirup Gula Aren Kental; Es batu secukupnya.",
+    "cara": "1. Tuang sirup gula aren ke dasar gelas. 2. Masukkan es batu hingga penuh. 3. Tuang susu cair UHT secara perlahan. 4. Tuangkan shot espresso di bagian paling atas."
+  },
+  {
+    "brand": "Janji Jiwa",
+    "kategori": "Seri Kopi",
+    "nama": "Signature Kopi Susu",
+    "harga": "24.000",
+    "deskripsi": "Kopi espresso dengan susu segar dan gula aren murni khas Janji Jiwa.",
+    "bahan": "1 shot Espresso (30 ml); 120 ml Susu Cair UHT Full Cream; 25-30 ml Sirup Gula Aren cair; Es batu.",
+    "cara": "1. Tuang sirup gula aren di dasar. 2. Masukkan es batu. 3. Tuangkan susu secara perlahan. 4. Tambahkan espresso di paling atas."
+  },
+  {
+    "brand": "Kopi Kenangan",
+    "kategori": "Coffee Series",
+    "nama": "Kopi Kenangan Mantan",
+    "harga": "22.000",
+    "deskripsi": "Kopi susu espresso dengan gula aren murni khas Kenangan.",
+    "bahan": "1 shot Espresso; 120 ml Susu Cair Segar; 25-30 ml Sirup Gula Aren murni; Es batu.",
+    "cara": "1. Tuang gula aren di dasar gelas. 2. Masukkan es batu. 3. Tuang susu cair segar perlahan. 4. Tambahkan shot espresso di atasnya."
+  },
+  {
+    "brand": "Starbucks",
+    "kategori": "Coffee & Espresso",
+    "nama": "Caramel Macchiato",
+    "harga": "62.000",
+    "deskripsi": "Espresso dengan susu vanila creamy dan siraman saus caramel di atasnya.",
+    "bahan": "1-2 shot Espresso; 200 ml Susu Cair Full Cream; 1 sdm Sirup Vanila; Saus Caramel secukupnya.",
+    "cara": "1. Tuang sirup vanila di dasar. 2. Masukkan es batu. 3. Tuangkan susu cair full cream. 4. Masukkan shot espresso hangat. 5. Hiasi saus caramel bentuk jaring."
+  }
+]
